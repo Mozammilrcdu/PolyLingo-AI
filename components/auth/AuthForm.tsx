@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { toast } from "sonner";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { saveUserToDatabase } from "@/services/auth/saveUser";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,8 @@ import { storeUser } from "@/services/auth/user";
 export function AuthForm() {
   const pathname = usePathname();
   const [pending, setPending] = useState(false);
-  // const [user, setCurrentUser] = useAtom(currentUser);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const isSignUp = pathname === "/sign-up";
 
@@ -51,6 +53,7 @@ export function AuthForm() {
         });
       }
     });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,15 +64,13 @@ export function AuthForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // console.log(values);
     setPending(true);
+
     if (isSignUp) {
       createUserWithEmailAndPassword(auth, values.email, values.password)
         .then(async (userCredential) => {
-          // Signed up
           const user = userCredential.user;
+
           const response = await saveUserToDatabase({
             id: user.uid,
             email: user.email!,
@@ -77,55 +78,55 @@ export function AuthForm() {
             name: user.displayName || user.email!.split("@")[0],
             isPro: false,
           });
+
           if (!response.success) {
             toast.error("Failed to save user to database.");
             setPending(false);
             return;
           }
+
           await storeUser({
             id: user.uid,
             email: user.email!,
             image: user.photoURL || "",
             name: user.displayName || user.email!.split("@")[0],
           });
+
           toast.success("User created successfully!");
           router.push("/dashboard");
           setPending(false);
         })
         .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          toast.error(`Error ${errorCode}: ${errorMessage}`);
+          toast.error(`Error ${error.code}: ${error.message}`);
           setPending(false);
         });
     } else {
       signInWithEmailAndPassword(auth, values.email, values.password)
         .then(async (userCredential) => {
-          // Signed in
           const user = userCredential.user;
+
           await storeUser({
             id: user.uid,
             email: user.email!,
             image: user.photoURL || "",
             name: user.displayName || user.email!.split("@")[0],
           });
+
           toast.success("Signed in successfully!");
           router.push("/dashboard");
           setPending(false);
         })
         .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          toast.error(`Error ${errorCode}: ${errorMessage}`);
+          toast.error(`Error ${error.code}: ${error.message}`);
           setPending(false);
         });
     }
   }
 
-  // console.log(form.formState.errors);
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <FieldGroup>
+        {/* Email */}
         <Controller
           name="email"
           control={form.control}
@@ -137,21 +138,38 @@ export function AuthForm() {
             </Field>
           )}
         />
+
+        {/* Password */}
         <Controller
           name="password"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                type="password"
-                placeholder="Enter your password"
-                {...field}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="pr-10"
+                  {...field}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((p) => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
+
+        {/* Confirm Password */}
         {isSignUp && (
           <Controller
             name="confirmPassword"
@@ -161,11 +179,32 @@ export function AuthForm() {
                 <FieldLabel htmlFor="confirmPassword">
                   Confirm Password
                 </FieldLabel>
-                <Input
-                  type="password"
-                  placeholder="Confirm your password"
-                  {...field}
-                />
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    className="pr-10"
+                    {...field}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((p) => !p)
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -173,6 +212,7 @@ export function AuthForm() {
             )}
           />
         )}
+
         <Button type="submit" disabled={pending} className="w-full">
           {isSignUp ? "Sign Up" : "Sign In"}
         </Button>
