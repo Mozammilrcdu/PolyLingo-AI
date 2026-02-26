@@ -88,7 +88,7 @@ const Header = ({ user }: { user: User | null }) => {
                       polarPortal({ externalCustomerId: user.id })
                     }
                   >
-                    Your Portal
+                    PRO User
                   </Button>
                 )}
                 <Button onClick={logout}>Logout</Button>
@@ -151,17 +151,6 @@ const Header = ({ user }: { user: User | null }) => {
 
             {user ? (
               <>
-                {user.isPro && (
-                  <Button
-                    className="w-full"
-                    onClick={() => {
-                      polarPortal({ externalCustomerId: user.id });
-                      setMenuOpen(false);
-                    }}
-                  >
-                    Your Portal
-                  </Button>
-                )}
                 <Button className="w-full" onClick={logout}>
                   Logout
                 </Button>

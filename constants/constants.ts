@@ -8,8 +8,11 @@ export const LANGUAGES: Language[] = [
   { code: "es", name: "Spanish", pro: false },
   { code: "fr", name: "French", pro: false },
   { code: "de", name: "German", pro: false },
-  { code: "ur", name: "Urdu", pro: false},
+  { code: "hi", name: "Hindi", pro: false },      
+  { code: "ur", name: "Urdu", pro: false },
   { code: "fa", name: "Persian (Farsi)", pro: false },
+  { code: "bn", name: "Bengali", pro: false },      
+  { code: "ta", name: "Tamil", pro: false },      
 
   // Pro languages
   { code: "it", name: "Italian", pro: true },
@@ -19,6 +22,8 @@ export const LANGUAGES: Language[] = [
   { code: "ja", name: "Japanese", pro: true },
   { code: "ko", name: "Korean", pro: true },
   { code: "zh", name: "Mandarin Chinese", pro: true },
+  { code: "tr", name: "Turkish", pro: true },      
+  { code: "id", name: "Indonesian", pro: true },  
   { code: "arc", name: "Aramaic", pro: true },
 ];
 
